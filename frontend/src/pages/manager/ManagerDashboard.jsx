@@ -479,6 +479,14 @@ const ManagerDashboard = () => {
                               Broadcast
                             </button>
                           )}
+                          {['active', 'inprogress'].includes(incident.status) && (
+                            <button
+                              onClick={() => setEscalationModal(incident)}
+                              className="text-text-secondary text-xs hover:text-white"
+                            >
+                              Emergency
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
