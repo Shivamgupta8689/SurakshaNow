@@ -1,6 +1,6 @@
-# SurakshaNow
+# ASAP
 
-SurakshaNow is an AI-assisted hotel emergency response platform. It connects guests, response staff, and managers through QR-based incident reporting, Firebase Realtime Database updates, Gemini-powered analysis, emergency chat, manager command tools, and live safety broadcasts.
+ASAP is an AI-assisted hotel emergency response platform. It connects guests, response staff, and managers through QR-based incident reporting, Firebase Realtime Database updates, Gemini-powered analysis, emergency chat, manager command tools, and live safety broadcasts.
 
 The project is split into:
 
@@ -249,7 +249,7 @@ Enable these Firebase products:
 The app stores data under:
 
 ```text
-surakshanow/
+asap/
 ├── broadcasts/
 ├── incidents/
 ├── managers/
@@ -278,7 +278,7 @@ Use it to quickly test:
 
 ## Automatic Safety Banners
 
-SurakshaNow has two automatic guest-facing warning paths:
+ASAP has two automatic guest-facing warning paths:
 
 ### Hotel-Wide Banner
 
