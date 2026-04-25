@@ -28,8 +28,8 @@ const AutoFilledForm = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refId] = useState(() => `SN-${Date.now().toString(36).toUpperCase()}`);
   const confidence = analysisResult?.confidence || 0;
-  const refId = `SN-${Date.now().toString(36).toUpperCase()}`;
 
   const toggleRecipient = (recipient) => {
     setFormData((prev) => ({

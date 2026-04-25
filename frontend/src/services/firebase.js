@@ -30,7 +30,7 @@ export const writeIncident = async (incidentData) => {
   const id = incidentRef.key;
 
   const cleanData = Object.fromEntries(
-    Object.entries(incidentData).filter(([_, v]) => v != null && !(Array.isArray(v) && v.length === 0))
+    Object.entries(incidentData).filter(([, v]) => v != null && !(Array.isArray(v) && v.length === 0))
   );
 
   const incident = {
@@ -127,6 +127,108 @@ export const sendBroadcast = (floorKey, data) => {
 export const clearBroadcast = (floorKey) => {
   const broadcastRef = ref(database, `surakshanow/broadcasts/${floorKey}`);
   return set(broadcastRef, { active: false });
+};
+
+export const seedDemoData = async () => {
+  const now = Date.now();
+  const demoData = {
+    staff: {
+      'staff-001': {
+        id: 'staff-001',
+        name: 'Aarav Sharma',
+        role: 'Response Staff',
+        floor: '3',
+        phone: '+91-98765-43001',
+        status: 'available',
+      },
+      'staff-002': {
+        id: 'staff-002',
+        name: 'Meera Iyer',
+        role: 'Medical Response',
+        floor: '2',
+        phone: '+91-98765-43002',
+        status: 'available',
+      },
+      'staff-003': {
+        id: 'staff-003',
+        name: 'Rohan Verma',
+        role: 'Security Lead',
+        floor: 'ground',
+        phone: '+91-98765-43003',
+        status: 'busy',
+      },
+    },
+    managers: {
+      'manager-001': {
+        id: 'manager-001',
+        name: 'Operations Manager',
+        role: 'Duty Manager',
+        phone: '+91-98765-44001',
+        email: 'manager@surakshanow.demo',
+      },
+    },
+    incidents: {
+      'demo-fire-floor3': {
+        id: 'demo-fire-floor3',
+        type: 'Fire',
+        severity: 'High',
+        description: 'Smoke detected near corridor outside Room 304.',
+        immediateAction: 'Avoid Floor 3 corridor and wait for staff instructions.',
+        roomNumber: '304',
+        floor: '3',
+        locationName: 'Room 304',
+        floorLabel: 'Floor 3',
+        hotelName: 'Grand Hotel',
+        reportedBy: 'Guest-304',
+        status: 'active',
+        reportedAt: now - 8 * 60 * 1000,
+        escalationTimer: now - 3 * 60 * 1000,
+        evacuationNeeded: true,
+      },
+      'demo-medical-floor2': {
+        id: 'demo-medical-floor2',
+        type: 'Medical',
+        severity: 'Medium',
+        description: 'Guest reported dizziness and breathing discomfort.',
+        immediateAction: 'Send medical response staff with first aid kit.',
+        roomNumber: '205',
+        floor: '2',
+        locationName: 'Room 205',
+        floorLabel: 'Floor 2',
+        hotelName: 'Grand Hotel',
+        reportedBy: 'Guest-205',
+        status: 'inprogress',
+        assignedStaff: 'Meera Iyer',
+        assignedStaffPosition: 'Medical Response',
+        reportedAt: now - 18 * 60 * 1000,
+        escalationTimer: now - 13 * 60 * 1000,
+        evacuationNeeded: false,
+      },
+      'demo-resolved-ground': {
+        id: 'demo-resolved-ground',
+        type: 'Security',
+        severity: 'Low',
+        description: 'Unattended bag reported near reception. Cleared by security.',
+        immediateAction: 'Security verified the item and reopened the area.',
+        roomNumber: 'reception',
+        floor: 'ground',
+        locationName: 'Reception',
+        floorLabel: 'Ground Floor',
+        hotelName: 'Grand Hotel',
+        reportedBy: 'Guest-Reception',
+        status: 'resolved',
+        assignedStaff: 'Rohan Verma',
+        assignedStaffPosition: 'Security Lead',
+        reportedAt: now - 3 * 60 * 60 * 1000,
+        resolvedAt: now - 2 * 60 * 60 * 1000,
+        escalationTimer: now - 175 * 60 * 1000,
+        evacuationNeeded: false,
+      },
+    },
+  };
+
+  await update(ref(database, 'surakshanow'), demoData);
+  return demoData;
 };
 
 export default app;

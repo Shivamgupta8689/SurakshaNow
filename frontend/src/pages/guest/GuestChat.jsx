@@ -51,7 +51,7 @@ const GuestChat = () => {
 
     if (text.includes('@AI') || text.includes('@ai')) {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const response = await fetch(`${baseUrl}/api/gemini/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -333,7 +333,7 @@ const GuestChat = () => {
             {/* Vertical line */}
             <div className="absolute left-2.5 top-2 bottom-2 w-px bg-border" />
 
-            {timelineSteps.map((step, i) => (
+            {timelineSteps.map((step) => (
               <div key={step.key} className="relative mb-6 last:mb-0">
                 {/* Dot */}
                 <div

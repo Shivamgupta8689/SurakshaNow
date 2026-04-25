@@ -16,7 +16,8 @@ const AnalyzingState = () => {
 
     const analyze = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/gemini/analyze", {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/gemini/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ imageBase64, voiceTranscript: transcript })
@@ -50,7 +51,7 @@ const AnalyzingState = () => {
 
     analyze();
     return () => clearInterval(interval);
-  }, []);
+  }, [imageBase64, imageUrl, navigate, roomId, transcript]);
 
   return (
     <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center px-4 sm:px-6">

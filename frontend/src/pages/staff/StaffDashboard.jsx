@@ -21,22 +21,15 @@ const StaffDashboard = () => {
   const activeIncidents = incidents.filter((i) => i.status === 'active' || i.status === 'inprogress');
   const activeCount = incidents.filter((i) => i.status === 'active').length;
   const respondingCount = incidents.filter((i) => i.status === 'inprogress').length;
-  const resolvedToday = incidents.filter((i) => {
-    if (!i.resolvedAt) return false;
-    const today = new Date();
-    const resolved = new Date(i.resolvedAt);
-    return resolved.toDateString() === today.toDateString();
-  }).length;
 
   const handleAccept = async (incident) => {
     try {
-      const uid = auth.currentUser?.uid || 'staff-001';
       await updateIncident(incident.id, {
         status: 'inprogress',
         assignedStaff: staffName,
       });
       toast.success(`Accepted: ${incident.type} - Room ${incident.roomNumber}`);
-    } catch (err) {
+    } catch {
       toast.error('Failed to accept incident');
     }
   };

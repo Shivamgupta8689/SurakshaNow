@@ -4,6 +4,7 @@ import {
   auth,
   detachListener,
   listenToAllIncidents,
+  seedDemoData,
   sendBroadcast,
   updateIncident,
 } from '../../services/firebase';
@@ -212,6 +213,16 @@ const ManagerDashboard = () => {
     navigate('/manager/login');
   };
 
+  const handleSeedDemoData = async () => {
+    try {
+      await seedDemoData();
+      toast.success('Demo Firebase data seeded');
+    } catch (error) {
+      console.error('Seed data error:', error);
+      toast.error('Failed to seed demo data');
+    }
+  };
+
   const handleBroadcast = async (floorKey, message) => {
     try {
       await sendBroadcast(floorKey, {
@@ -310,12 +321,32 @@ const ManagerDashboard = () => {
         </aside>
 
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-end mb-3">
+            <button onClick={handleSeedDemoData} className="btn-outline text-[10px] px-3 py-2">
+              Seed Demo Data
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             <MetricCard label="Active Incidents" value={activeCount} pulse={activeCount > 0} />
             <MetricCard label="Pending Response" value={pendingCount} />
             <MetricCard label="Resolved Today" value={resolvedToday} />
             <MetricCard label="Avg Response" value={avgResponse()} />
           </div>
+
+          {incidents.length === 0 && (
+            <div className="border border-border bg-navy-900 p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-white text-sm font-semibold">No Firebase demo data found</p>
+                <p className="text-text-muted text-xs mt-1">
+                  Seed staff, manager, and sample incident history for testing.
+                </p>
+              </div>
+              <button onClick={handleSeedDemoData} className="btn-primary text-xs py-2 px-4">
+                Seed Demo Data
+              </button>
+            </div>
+          )}
 
           {escalatedIncidents.length > 0 && (
             <div className="mb-6">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ref, onValue, off } from 'firebase/database';
-import { database } from '../../services/firebase';
+import { database, listenToAllIncidents, detachListener } from '../../services/firebase';
 
 const locationMap = {
   lobby: 'Lobby',
@@ -16,10 +16,20 @@ const locationMap = {
   reception: 'Reception',
 };
 
+const getFloorKey = (rawFloor) => {
+  const value = String(rawFloor || 'ground').trim().toLowerCase();
+  if (!value) return 'ground';
+  if (['ground', 'basement', 'terrace'].includes(value)) return value;
+  if (value.startsWith('floor')) return value.replace(/\s+/g, '');
+  if (!Number.isNaN(Number(value))) return `floor${value}`;
+  return value.replace(/\s+/g, '');
+};
+
 const QRLanding = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [broadcast, setBroadcast] = useState(null);
+  const [incidents, setIncidents] = useState([]);
 
   const parts = roomId ? roomId.split('-') : ['000', 'floor0'];
 
@@ -34,8 +44,7 @@ const QRLanding = () => {
     ? floor.charAt(0).toUpperCase() + floor.slice(1)
     : `Floor ${floor}`;
 
-  // Normalise floor key for Firebase lookup e.g. "floor3" or "ground"
-  const floorKey = rawFloor.toLowerCase();
+  const floorKey = getFloorKey(rawFloor);
 
   // Listen for active broadcast on this floor
   useEffect(() => {
@@ -52,6 +61,32 @@ const QRLanding = () => {
     });
     return () => off(broadcastRef);
   }, [floorKey]);
+
+  useEffect(() => {
+    const incidentsRef = listenToAllIncidents(setIncidents);
+    return () => detachListener(incidentsRef);
+  }, []);
+
+  const activeIncidents = incidents
+    .filter((incident) => ['active', 'inprogress'].includes(incident.status))
+    .sort((a, b) => (b.reportedAt || 0) - (a.reportedAt || 0));
+
+  const activeFloorIncident = activeIncidents
+    .filter((incident) => (
+      getFloorKey(incident.floor) === floorKey
+    ))[0];
+
+  const automaticIncident = activeFloorIncident || activeIncidents[0];
+
+  const visibleAlert = broadcast || (automaticIncident
+    ? {
+        heading: activeFloorIncident ? `Safety Alert - ${floorLabel}` : 'Hotel Safety Alert',
+        incidentType: automaticIncident.type || automaticIncident.incidentType,
+        message:
+          automaticIncident.immediateAction ||
+          'An emergency has been reported in the hotel. Please stay calm, follow staff instructions, and avoid the affected area.',
+      }
+    : null);
 
   return (
     <div className="min-h-screen bg-navy-950 flex flex-col">
@@ -74,7 +109,7 @@ const QRLanding = () => {
       </div>
 
       {/* ── Floor Broadcast Warning Banner ─────────────────────────────────── */}
-      {broadcast && (
+      {visibleAlert && (
         <div className="bg-accent-red px-4 sm:px-6 py-4 animate-pulse-red">
           <div className="flex items-start gap-3 max-w-2xl mx-auto">
             {/* Warning icon */}
@@ -87,15 +122,15 @@ const QRLanding = () => {
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm uppercase tracking-wide mb-1">
-                Safety Alert — {floorLabel}
+                {visibleAlert.heading || `Safety Alert - ${floorLabel}`}
               </p>
               <p className="text-red-100 text-xs leading-relaxed">
-                {broadcast.message ||
+                {visibleAlert.message ||
                   `An emergency has been reported on ${floorLabel}. Please stay calm, follow staff instructions, and avoid the affected area.`}
               </p>
-              {broadcast.incidentType && (
+              {visibleAlert.incidentType && (
                 <p className="text-red-200 text-[10px] mt-1 uppercase tracking-wider">
-                  Incident type: {broadcast.incidentType}
+                  Incident type: {visibleAlert.incidentType}
                 </p>
               )}
             </div>
@@ -104,7 +139,7 @@ const QRLanding = () => {
       )}
 
       {/* Connected banner — only show if no broadcast active */}
-      {!broadcast && (
+      {!visibleAlert && (
         <div className="bg-accent-red bg-opacity-20 border-b border-accent-red px-4 sm:px-6 py-3">
           <p className="text-accent-red text-xs font-semibold uppercase tracking-wide text-center">
             Connected to Hotel Emergency System

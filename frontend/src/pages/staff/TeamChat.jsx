@@ -14,28 +14,23 @@ const TeamChat = ({ incidents = [] }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const effectiveSelectedIncidentId = selectedIncidentId || activeIncidents[0]?.id || null;
 
   useEffect(() => {
-    if (activeIncidents.length > 0 && !selectedIncidentId) {
-      setSelectedIncidentId(activeIncidents[0].id);
-    }
-  }, [activeIncidents]);
-
-  useEffect(() => {
-    if (!selectedIncidentId) return;
-    const ref = listenToChat(selectedIncidentId, setMessages);
+    if (!effectiveSelectedIncidentId) return;
+    const ref = listenToChat(effectiveSelectedIncidentId, setMessages);
     return () => detachListener(ref);
-  }, [selectedIncidentId]);
+  }, [effectiveSelectedIncidentId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const selectedIncident = incidents.find((i) => i.id === selectedIncidentId);
+  const selectedIncident = incidents.find((i) => i.id === effectiveSelectedIncidentId);
 
   const sendMessage = async (text) => {
-    if (!text.trim() || !selectedIncidentId) return;
-    await writeMessage(selectedIncidentId, {
+    if (!text.trim() || !effectiveSelectedIncidentId) return;
+    await writeMessage(effectiveSelectedIncidentId, {
       senderId: staffId,
       senderName: staffName,
       senderRole: 'Staff',
@@ -46,7 +41,8 @@ const TeamChat = ({ incidents = [] }) => {
 
     if (text.includes('@AI') || text.includes('@ai')) {
       try {
-        const response = await fetch("http://localhost:5000/api/gemini/chat", {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/gemini/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -63,7 +59,7 @@ const TeamChat = ({ incidents = [] }) => {
         if (!response.ok) throw new Error("Failed to get crisis response");
         const data = await response.json();
         const aiResponse = data.reply;
-        await writeMessage(selectedIncidentId, {
+        await writeMessage(effectiveSelectedIncidentId, {
           senderId: 'crisisbot',
           senderName: 'CrisisBot',
           senderRole: 'AI',
@@ -101,7 +97,7 @@ const TeamChat = ({ incidents = [] }) => {
                 key={inc.id}
                 onClick={() => setSelectedIncidentId(inc.id)}
                 className={`w-full text-left px-3 py-3 border transition-colors ${
-                  selectedIncidentId === inc.id
+                  effectiveSelectedIncidentId === inc.id
                     ? 'bg-navy-750 border-l-2 border-l-accent-red border-t-border border-r-border border-b-border'
                     : 'border-transparent hover:bg-navy-800'
                 }`}
@@ -119,7 +115,7 @@ const TeamChat = ({ incidents = [] }) => {
 
         {/* Chat Panel */}
         <div className="flex-1 flex flex-col bg-navy-900 border border-border min-h-0">
-          {selectedIncidentId ? (
+          {effectiveSelectedIncidentId ? (
             <>
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div>

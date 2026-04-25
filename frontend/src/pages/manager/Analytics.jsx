@@ -10,6 +10,7 @@ const Analytics = () => {
   const [dateRange, setDateRange] = useState('7d');
   const [report, setReport] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
     const ref = listenToAllIncidents(setIncidents);
@@ -18,7 +19,6 @@ const Analytics = () => {
 
   const filteredIncidents = incidents.filter((i) => {
     if (!i.reportedAt) return true;
-    const now = Date.now();
     const ranges = { '24h': 86400000, '7d': 604800000, '30d': 2592000000 };
     return now - i.reportedAt < (ranges[dateRange] || ranges['30d']);
   });
@@ -43,7 +43,8 @@ const Analytics = () => {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const response = await fetch("http://localhost:5000/api/gemini/report", {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${baseUrl}/api/gemini/report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ incidents: filteredIncidents })
