@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0A0F1E;
+    color: #FFFFFF;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0D1526;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1E2A3A;
+    border-radius: 0px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2A3A4E;
+  }
+
+  input, textarea, select {
+    background-color: #161B2B;
+    border: 1px solid #1E2A3A;
+    color: #FFFFFF;
+    outline: none;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: #D32F2F;
+  }
+
+  button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s linear;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent-red text-white px-6 py-3 font-semibold tracking-wide uppercase text-sm;
+    border-radius: 2px;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    @apply bg-accent-red-dark;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border border-accent-red text-accent-red px-6 py-3 font-semibold tracking-wide uppercase text-sm;
+    border-radius: 2px;
+  }
+
+  .btn-outline:hover {
+    @apply bg-accent-red bg-opacity-10;
+  }
+
+  .btn-outline-white {
+    @apply bg-transparent border border-white text-white px-6 py-3 font-semibold tracking-wide uppercase text-sm;
+    border-radius: 2px;
+  }
+
+  .btn-outline-white:hover {
+    @apply bg-white bg-opacity-5;
+  }
+
+  .card {
+    @apply bg-navy-750 border border-border p-4;
+    border-radius: 0px;
+  }
+
+  .card-dark {
+    @apply bg-navy-900 border border-border p-4;
+    border-radius: 0px;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-navy-800 border border-border text-white text-sm;
+    border-radius: 2px;
+  }
+
+  .input-field:focus {
+    @apply border-accent-red;
+  }
+
+  .grid-bg {
+    background-image: 
+      linear-gradient(rgba(30, 42, 58, 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 42, 58, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .metric-card {
+    @apply bg-navy-750 border border-border p-4 flex flex-col gap-1;
+    border-radius: 0px;
+  }
+
+  .tab-active {
+    @apply text-white border-b-2 border-accent-red pb-2 font-semibold;
+  }
+
+  .tab-inactive {
+    @apply text-text-secondary pb-2 font-medium hover:text-white;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 text-text-secondary hover:text-white hover:bg-navy-750 cursor-pointer transition-colors text-sm;
+  }
+
+  .sidebar-item.active {
+    @apply text-white bg-navy-750 border-l-2 border-accent-red;
+  }
+}
