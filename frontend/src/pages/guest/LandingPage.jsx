@@ -1,6 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { detachListener, listenToAllIncidents } from '../../services/firebase';
 
 const LandingPage = () => {
+  const [incidents, setIncidents] = useState([]);
+
+  useEffect(() => {
+    const incidentsRef = listenToAllIncidents(setIncidents);
+    return () => detachListener(incidentsRef);
+  }, []);
+
+  const activeIncident = incidents
+    .filter((incident) => ['active', 'inprogress'].includes(incident.status))
+    .sort((a, b) => (b.reportedAt || 0) - (a.reportedAt || 0))[0];
+
   return (
     <div className="min-h-screen bg-navy-950 grid-bg flex flex-col">
       {/* Navbar */}
@@ -22,6 +35,32 @@ const LandingPage = () => {
           </Link>
         </div>
       </nav>
+
+      {activeIncident && (
+        <div className="bg-accent-red px-4 sm:px-6 py-4 animate-pulse-red">
+          <div className="flex items-start gap-3 max-w-3xl mx-auto">
+            <div className="shrink-0 mt-0.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-bold text-sm uppercase tracking-wide mb-1">
+                Hotel Safety Alert
+              </p>
+              <p className="text-red-100 text-xs leading-relaxed">
+                {activeIncident.immediateAction ||
+                  'An emergency has been reported in the hotel. Please stay calm, follow staff instructions, and avoid the affected area.'}
+              </p>
+              <p className="text-red-200 text-[10px] mt-1 uppercase tracking-wider">
+                Incident type: {activeIncident.type || activeIncident.incidentType || 'Emergency'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <main className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-12 lg:py-0">
