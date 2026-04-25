@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ref, onValue, off } from 'firebase/database';
+import { database } from '../../services/firebase';
 
 const locationMap = {
   lobby: 'Lobby',
@@ -16,6 +19,7 @@ const locationMap = {
 const QRLanding = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const [broadcast, setBroadcast] = useState(null);
 
   const parts = roomId ? roomId.split('-') : ['000', 'floor0'];
 
@@ -26,7 +30,28 @@ const QRLanding = () => {
 
   const rawFloor = parts[1] || 'ground';
   const floor = rawFloor.toLowerCase().replace('floor', '') || 'Ground';
-  const floorLabel = isNaN(floor) ? floor.charAt(0).toUpperCase() + floor.slice(1) : `Floor ${floor}`;
+  const floorLabel = isNaN(floor)
+    ? floor.charAt(0).toUpperCase() + floor.slice(1)
+    : `Floor ${floor}`;
+
+  // Normalise floor key for Firebase lookup e.g. "floor3" or "ground"
+  const floorKey = rawFloor.toLowerCase();
+
+  // Listen for active broadcast on this floor
+  useEffect(() => {
+    if (!database) return;
+    const broadcastRef = ref(database, `surakshanow/broadcasts/${floorKey}`);
+    onValue(broadcastRef, (snap) => {
+      const data = snap.val();
+      // Only show if broadcast is active
+      if (data && data.active) {
+        setBroadcast(data);
+      } else {
+        setBroadcast(null);
+      }
+    });
+    return () => off(broadcastRef);
+  }, [floorKey]);
 
   return (
     <div className="min-h-screen bg-navy-950 flex flex-col">
@@ -48,12 +73,44 @@ const QRLanding = () => {
         </div>
       </div>
 
-      {/* Alert Banner */}
-      <div className="bg-accent-red bg-opacity-20 border-b border-accent-red px-4 sm:px-6 py-3">
-        <p className="text-accent-red text-xs font-semibold uppercase tracking-wide text-center">
-          Connected to Hotel Emergency System
-        </p>
-      </div>
+      {/* ── Floor Broadcast Warning Banner ─────────────────────────────────── */}
+      {broadcast && (
+        <div className="bg-accent-red px-4 sm:px-6 py-4 animate-pulse-red">
+          <div className="flex items-start gap-3 max-w-2xl mx-auto">
+            {/* Warning icon */}
+            <div className="shrink-0 mt-0.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-bold text-sm uppercase tracking-wide mb-1">
+                Safety Alert — {floorLabel}
+              </p>
+              <p className="text-red-100 text-xs leading-relaxed">
+                {broadcast.message ||
+                  `An emergency has been reported on ${floorLabel}. Please stay calm, follow staff instructions, and avoid the affected area.`}
+              </p>
+              {broadcast.incidentType && (
+                <p className="text-red-200 text-[10px] mt-1 uppercase tracking-wider">
+                  Incident type: {broadcast.incidentType}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connected banner — only show if no broadcast active */}
+      {!broadcast && (
+        <div className="bg-accent-red bg-opacity-20 border-b border-accent-red px-4 sm:px-6 py-3">
+          <p className="text-accent-red text-xs font-semibold uppercase tracking-wide text-center">
+            Connected to Hotel Emergency System
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 px-4 sm:px-6 lg:px-12 py-8 flex flex-col">
@@ -61,17 +118,23 @@ const QRLanding = () => {
 
           {/* Photo Card */}
           <button
-            onClick={() => navigate(`/guest/${roomId}/sos`, {
-              state: {
-                mode: 'photo',
-                locationName,
-                floorLabel,
-              }
-            })}
+            onClick={() =>
+              navigate(`/guest/${roomId}/sos`, {
+                state: { mode: 'photo', locationName, floorLabel },
+              })
+            }
             className="flex-1 card-dark flex flex-col items-center justify-center py-12 lg:py-20 hover:border-accent-red transition-colors group cursor-pointer"
           >
             <div className="w-16 h-16 border-2 border-text-muted group-hover:border-accent-red flex items-center justify-center mb-4 transition-colors">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-muted group-hover:text-accent-red transition-colors">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="text-text-muted group-hover:text-accent-red transition-colors"
+              >
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
@@ -84,17 +147,23 @@ const QRLanding = () => {
 
           {/* Voice Card */}
           <button
-            onClick={() => navigate(`/guest/${roomId}/sos`, {
-              state: {
-                mode: 'voice',
-                locationName,
-                floorLabel,
-              }
-            })}
+            onClick={() =>
+              navigate(`/guest/${roomId}/sos`, {
+                state: { mode: 'voice', locationName, floorLabel },
+              })
+            }
             className="flex-1 card-dark flex flex-col items-center justify-center py-12 lg:py-20 hover:border-accent-red transition-colors group cursor-pointer"
           >
             <div className="w-16 h-16 border-2 border-text-muted group-hover:border-accent-red flex items-center justify-center mb-4 transition-colors">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-muted group-hover:text-accent-red transition-colors">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="text-text-muted group-hover:text-accent-red transition-colors"
+              >
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                 <line x1="12" y1="19" x2="12" y2="23" />
@@ -114,18 +183,15 @@ const QRLanding = () => {
         </p>
 
         <button
-          onClick={() => navigate(`/guest/${roomId}/sos`, {
-            state: {
-              mode: 'non-emergency',
-              locationName,
-              floorLabel,
-            }
-          })}
+          onClick={() =>
+            navigate(`/guest/${roomId}/sos`, {
+              state: { mode: 'non-emergency', locationName, floorLabel },
+            })
+          }
           className="btn-outline w-full mt-4 text-center text-xs"
         >
           Report Non-Emergency Issue
         </button>
-
       </div>
     </div>
   );
