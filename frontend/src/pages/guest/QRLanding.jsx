@@ -30,6 +30,17 @@ const QRLanding = () => {
   const navigate = useNavigate();
   const [broadcast, setBroadcast] = useState(null);
   const [incidents, setIncidents] = useState([]);
+  const [myIncidentId, setMyIncidentId] = useState(localStorage.getItem('myIncidentId'));
+
+  const myIncident = incidents.find(i => i.id === myIncidentId);
+
+  useEffect(() => {
+    if (myIncident && myIncident.status === 'resolved') {
+      localStorage.removeItem('myIncidentId');
+      localStorage.removeItem('myRoomId');
+      setMyIncidentId(null);
+    }
+  }, [myIncident]);
 
   const parts = roomId ? roomId.split('-') : ['000', 'floor0'];
 
@@ -80,12 +91,12 @@ const QRLanding = () => {
 
   const visibleAlert = broadcast || (automaticIncident
     ? {
-        heading: activeFloorIncident ? `Safety Alert - ${floorLabel}` : 'Hotel Safety Alert',
-        incidentType: automaticIncident.type || automaticIncident.incidentType,
-        message:
-          automaticIncident.immediateAction ||
-          'An emergency has been reported in the hotel. Please stay calm, follow staff instructions, and avoid the affected area.',
-      }
+      heading: activeFloorIncident ? `Safety Alert - ${floorLabel}` : 'Hotel Safety Alert',
+      incidentType: automaticIncident.type || automaticIncident.incidentType,
+      message:
+        automaticIncident.immediateAction ||
+        'An emergency has been reported in the hotel. Please stay calm, follow staff instructions, and avoid the affected area.',
+    }
     : null);
 
   return (
@@ -93,13 +104,15 @@ const QRLanding = () => {
 
       {/* Header */}
       <div className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-accent-red flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <span className="text-white font-bold text-sm tracking-wider uppercase">ASAP</span>
+        <div className="flex items-center gap-2">
+          <img
+            src="/asap.png"
+            alt="ASAP Logo"
+            className="h-16 w-auto object-contain"
+          />
+          <span className="text-white font-bold text-xl tracking-wider uppercase">
+            ASAP
+          </span>
         </div>
         <div className="bg-accent-red px-3 py-1">
           <span className="text-white text-xs font-semibold">
@@ -108,44 +121,13 @@ const QRLanding = () => {
         </div>
       </div>
 
-      {/* ── Floor Broadcast Warning Banner ─────────────────────────────────── */}
-      {visibleAlert && (
-        <div className="bg-accent-red px-4 sm:px-6 py-4 animate-pulse-red">
-          <div className="flex items-start gap-3 max-w-2xl mx-auto">
-            {/* Warning icon */}
-            <div className="shrink-0 mt-0.5">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-white font-bold text-sm uppercase tracking-wide mb-1">
-                {visibleAlert.heading || `Safety Alert - ${floorLabel}`}
-              </p>
-              <p className="text-red-100 text-xs leading-relaxed">
-                {visibleAlert.message ||
-                  `An emergency has been reported on ${floorLabel}. Please stay calm, follow staff instructions, and avoid the affected area.`}
-              </p>
-              {visibleAlert.incidentType && (
-                <p className="text-red-200 text-[10px] mt-1 uppercase tracking-wider">
-                  Incident type: {visibleAlert.incidentType}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Connected banner — only show if no broadcast active */}
-      {!visibleAlert && (
         <div className="bg-accent-red bg-opacity-20 border-b border-accent-red px-4 sm:px-6 py-3">
           <p className="text-accent-red text-xs font-semibold uppercase tracking-wide text-center">
             Connected to Hotel Emergency System
           </p>
         </div>
-      )}
+      
 
       {/* Content */}
       <div className="flex-1 px-4 sm:px-6 lg:px-12 py-8 flex flex-col">
@@ -216,6 +198,15 @@ const QRLanding = () => {
         <p className="text-text-muted text-xs text-center mt-6">
           Both options can be used together for better accuracy
         </p>
+
+        {myIncidentId && myIncident && ['active', 'inprogress'].includes(myIncident.status) && (
+          <button
+            onClick={() => navigate(`/guest/${roomId}/chat/${myIncidentId}`)}
+            className="btn-primary w-full mt-4 text-center text-xs bg-orange-600 hover:bg-orange-700 border-none shadow-[0_0_15px_rgba(234,88,12,0.3)] animate-pulse hover:animate-none"
+          >
+            Track My Alert Status
+          </button>
+        )}
 
         <button
           onClick={() =>

@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { writeIncident } from '../../services/firebase';
 import SeverityBadge from '../../components/SeverityBadge';
 import toast from 'react-hot-toast';
+import { auth } from '../../services/firebase';
 
 const AutoFilledForm = () => {
   const { roomId } = useParams();
@@ -41,33 +42,47 @@ const AutoFilledForm = () => {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const incidentId = await writeIncident({
-        type: formData.incidentType,
-        severity: formData.severity,
-        description: formData.description,
-        immediateAction: formData.immediateAction,
-        roomNumber,
-        floor,
-        locationName: locationName || `Room ${roomNumber}`,
-        floorLabel: floorLabel || `Floor ${floor}`,
-        hotelName: 'Grand Hotel',
-        imageUrl: imageUrl || null,
-        alertRecipients: formData.alertRecipients,
-        reportedBy: `Guest-${roomNumber}`,
-        aiAnalysis: analysisResult || null,
-        evacuationNeeded: formData.evacuationNeeded,
-      });
+  const user = auth.currentUser;
+  if (!user) {
+    toast.error('Session expired. Please refresh.');
+    return;
+  }
 
-      toast.success('Alert sent successfully!');
-      navigate(`/guest/${roomId}/confirm`, { state: { incidentId } });
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Failed to send alert. Retrying...');
-      setIsSubmitting(false);
-    }
-  };
+  setIsSubmitting(true);
+  try {
+    const incidentId = await writeIncident({
+      type: formData.incidentType,
+      severity: formData.severity,
+      description: formData.description,
+      immediateAction: formData.immediateAction,
+      roomNumber,
+      floor,
+      locationName: locationName || `Room ${roomNumber}`,
+      floorLabel: floorLabel || `Floor ${floor}`,
+      hotelName: 'Grand Hotel',
+      imageUrl: imageUrl || null,
+      alertRecipients: formData.alertRecipients,
+      reportedBy: user.uid,
+      isAnonymous: user.isAnonymous,
+      aiAnalysis: analysisResult || null,
+      evacuationNeeded: formData.evacuationNeeded,
+    });
+
+    toast.success('Alert sent successfully!');
+
+    // ✅ Yeh 2 lines add karo
+    sessionStorage.setItem('myIncidentId', incidentId);
+    sessionStorage.setItem('myRoomId', roomId);
+
+    navigate(`/guest/${roomId}/confirm`, {
+      state: { incidentId, guestUid: user.uid },
+    });
+  } catch (error) {
+    console.error('Submit error:', error);
+    toast.error('Failed to send alert. Retrying...');
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-navy-950 flex flex-col">

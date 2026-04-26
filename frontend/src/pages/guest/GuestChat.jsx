@@ -4,6 +4,7 @@ import { listenToIncident, listenToChat, writeMessage, detachListener } from '..
 import { startListening, stopListening, isSupported } from '../../services/speech';
 import ChatMessage from '../../components/ChatMessage';
 import toast from 'react-hot-toast';
+import { auth } from '../../services/firebase.js';
 
 const GuestChat = () => {
   const { roomId, incidentId } = useParams();
@@ -13,7 +14,7 @@ const GuestChat = () => {
   const parts = roomId ? roomId.split('-') : ['000', '0'];
   const roomNumber = parts[0];
   const floor = parts[1];
-  const guestId = `guest-${roomId}`;
+ const guestId = auth.currentUser?.uid || `guest-${roomId}`;
 
   const [messages, setMessages] = useState([]);
   const [incident, setIncident] = useState(null);

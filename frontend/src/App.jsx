@@ -1,5 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useEffect } from "react";
+import { auth } from "./services/firebase.js";
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 import LandingPage from './pages/guest/LandingPage';
 import QRLanding from './pages/guest/QRLanding';
@@ -18,6 +21,21 @@ import Analytics from './pages/manager/Analytics';
 import QRGenerator from './pages/manager/QRGenerator';
 
 function App() {
+   useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        signInAnonymously(auth)
+          .then((userCredential) => {
+            console.log("Guest UID:", userCredential.user.uid);
+          })
+          .catch((error) => {
+            console.error("Auth error:", error);
+          });
+      } else {
+        console.log("User already logged in:", user.uid);
+      }
+    });
+  }, []);
   return (
     <>
       <Toaster

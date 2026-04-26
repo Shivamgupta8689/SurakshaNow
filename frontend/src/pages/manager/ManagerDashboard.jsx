@@ -54,9 +54,8 @@ const getFloorKey = (floor) => {
 
 const BroadcastModal = ({ incident, onClose, onSend }) => {
   const floorKey = getFloorKey(incident?.floor);
-  const defaultMessage = `Safety alert on Floor ${incident?.floor || 'N/A'}: ${
-    incident?.type || incident?.incidentType || 'Emergency'
-  } reported at ${getLocationLabel(incident)}. Please stay calm, follow staff instructions, and avoid the affected area.`;
+  const defaultMessage = `Safety alert on Floor ${incident?.floor || 'N/A'}: ${incident?.type || incident?.incidentType || 'Emergency'
+    } reported at ${getLocationLabel(incident)}. Please stay calm, follow staff instructions, and avoid the affected area.`;
 
   const [message, setMessage] = useState(defaultMessage);
   const [sending, setSending] = useState(false);
@@ -151,7 +150,10 @@ const ManagerDashboard = () => {
   const [escalationModal, setEscalationModal] = useState(null);
   const [broadcastModal, setBroadcastModal] = useState(null);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+
+  const activeIncidents = incidents.filter((i) => i.status === 'active' || i.status === 'inprogress');
 
   useEffect(() => {
     const incidentsRef = listenToAllIncidents((items) => {
@@ -258,14 +260,11 @@ const ManagerDashboard = () => {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <div className="w-7 h-7 bg-accent-red flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <span className="text-white font-bold text-sm tracking-wider uppercase hidden sm:block">
-            ASAP
-          </span>
+          <img
+  src="/asap.png"
+  alt="ASAP Logo"
+  className="h-16 sm:h-20 w-auto object-contain"
+/>
         </div>
 
         <div className="flex items-center gap-4">
@@ -274,14 +273,71 @@ const ManagerDashboard = () => {
             <span className="text-text-muted text-[10px]">MGR-7741</span>
           </div>
           <div className="relative">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A9BB0" strokeWidth="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            {activeCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-accent-red text-white text-[8px] w-4 h-4 flex items-center justify-center font-bold">
-                {activeCount}
-              </span>
+            <button 
+              className="relative p-1.5 hover:bg-navy-800 rounded-full transition-colors"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A9BB0" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              {activeCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent-red text-white text-[8px] w-4 h-4 flex items-center justify-center font-bold rounded-full">
+                  {activeCount}
+                </span>
+              )}
+            </button>
+            
+            {showNotifications && (
+              <div className="absolute top-10 right-0 w-72 sm:w-80 bg-navy-900 border border-border shadow-xl z-50 flex flex-col max-h-[400px] animate-fade-in origin-top-right rounded-lg overflow-hidden">
+                <div className="bg-navy-950 px-4 py-3 border-b border-border flex items-center justify-between shadow-sm">
+                  <span className="text-white text-xs font-bold uppercase tracking-wider">Active Alerts</span>
+                  {activeCount > 0 && (
+                    <span className="bg-accent-red/20 border border-accent-red/30 text-accent-red text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold rounded-full">
+                      {activeCount} New
+                    </span>
+                  )}
+                </div>
+                <div className="overflow-y-auto flex-1 custom-scrollbar">
+                  {activeIncidents.length > 0 ? (
+                    activeIncidents.map((inc) => (
+                      <div 
+                        key={inc.id} 
+                        className="p-4 border-b border-border hover:bg-navy-800 transition-colors cursor-pointer group"
+                        onClick={() => { setShowNotifications(false); setSelectedIncident(inc); }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white text-xs font-bold truncate pr-3">{inc.type || inc.incidentType || 'Emergency'}</span>
+                          <span className={`text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold rounded-full border shrink-0 ${inc.status === 'active' ? 'bg-accent-red/10 border-accent-red/30 text-accent-red' : 'bg-orange-500/10 border-orange-500/30 text-orange-400'}`}>
+                            {inc.status}
+                          </span>
+                        </div>
+                        <p className="text-text-secondary text-[10px] line-clamp-2 leading-relaxed mb-2">
+                          {inc.immediateAction || 'Emergency alert reported. Initial actions required.'}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-white/60 text-[9px] font-semibold uppercase tracking-wider">
+                            {getLocationLabel(inc)} 
+                          </span>
+                          <span className="text-text-muted text-[9px] font-mono">
+                            {inc.reportedAt ? new Date(inc.reportedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center flex flex-col items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-navy-800 flex items-center justify-center mb-3">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-text-muted" strokeWidth="2">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                      </div>
+                      <span className="text-text-muted text-xs font-medium">No active alerts</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
           <button onClick={handleLogout} className="text-text-muted hover:text-white" aria-label="Log out">
@@ -321,11 +377,7 @@ const ManagerDashboard = () => {
         </aside>
 
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-end mb-3">
-            <button onClick={handleSeedDemoData} className="btn-outline text-[10px] px-3 py-2">
-              Seed Demo Data
-            </button>
-          </div>
+          
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             <MetricCard label="Active Incidents" value={activeCount} pulse={activeCount > 0} />
@@ -450,13 +502,12 @@ const ManagerDashboard = () => {
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-2 h-2 ${
-                              incident.status === 'active'
+                            className={`w-2 h-2 ${incident.status === 'active'
                                 ? 'bg-accent-red'
                                 : incident.status === 'inprogress'
                                   ? 'bg-orange-500'
                                   : 'bg-green-500'
-                            }`}
+                              }`}
                           />
                           <span className="text-text-secondary text-xs capitalize">
                             {incident.status || '--'}

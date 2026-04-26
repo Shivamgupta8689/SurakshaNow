@@ -50,15 +50,14 @@ const StaffLogin = () => {
   return (
     <div className="min-h-screen bg-navy-950 grid-bg flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-accent-red flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <span className="text-white font-bold text-xl tracking-wider uppercase">ASAP</span>
-        </div>
+        {/* logo */}
+<div className="flex justify-center mb-12">
+  <img
+    src="/asap.png"
+    alt="ASAP Logo"
+    className="h-28 sm:h-32 lg:h-36 w-auto object-contain drop-shadow-xl"
+  />
+</div>
 
         <h1 className="text-white text-xl font-bold uppercase tracking-wide text-center mb-2">
           Staff Login

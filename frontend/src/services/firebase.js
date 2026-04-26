@@ -1,5 +1,11 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  signInAnonymously  // ✅ Added
+} from 'firebase/auth';
 import { getDatabase, ref, push, set, update, onValue, off, get } from 'firebase/database';
 
 const firebaseConfig = {
@@ -15,17 +21,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const database = getDatabase(app);
-
-// keep 'db' as alias so existing code doesn't break
 export const db = database;
 
-// Auth helpers
+// ── Auth helpers ────────────────────────────────────────────────────────────
 export const loginWithEmail = (email, password) => signInWithEmailAndPassword(auth, email, password);
 export const logout = () => signOut(auth);
 export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
+export { signInAnonymously }; // ✅ Export karo
 
-// Incident helpers
+// ── Incident helpers ────────────────────────────────────────────────────────
 export const writeIncident = async (incidentData) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated'); // ✅ Auth check
+
   const incidentRef = push(ref(database, 'asap/incidents'));
   const id = incidentRef.key;
 
@@ -36,6 +44,8 @@ export const writeIncident = async (incidentData) => {
   const incident = {
     ...cleanData,
     id,
+    reportedBy: user.uid,           // ✅ Real UID
+    isAnonymous: user.isAnonymous,  // ✅ Guest flag
     reportedAt: Date.now(),
     status: 'active',
     escalationTimer: Date.now() + 5 * 60 * 1000,
@@ -67,28 +77,47 @@ export const listenToAllIncidents = (callback) => {
   return incidentsRef;
 };
 
-// Chat helpers
+// ── Chat helpers ────────────────────────────────────────────────────────────
 export const writeMessage = async (incidentId, messageData) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated'); // ✅ Auth check
+
   const chatRef = push(ref(database, `asap/incidents/${incidentId}/chat`));
   await set(chatRef, {
     ...messageData,
+    senderId: user.uid,             // ✅ Real UID override
+    isAnonymous: user.isAnonymous,  // ✅ Guest flag
     timestamp: Date.now(),
   });
 };
 
 export const listenToChat = (incidentId, callback) => {
+  const user = auth.currentUser;
+  if (!user) return null; // ✅ Auth check
+
   const chatRef = ref(database, `asap/incidents/${incidentId}/chat`);
   onValue(chatRef, (snapshot) => {
     const data = snapshot.val();
-    const messages = data
+    const allMessages = data
       ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp)
       : [];
+
+    // ✅ Guest sirf apne + staff/manager/AI messages dekhe
+    const messages = user.isAnonymous
+      ? allMessages.filter(msg =>
+          msg.senderId === user.uid ||
+          msg.senderRole === 'Staff' ||
+          msg.senderRole === 'Manager' ||
+          msg.senderRole === 'AI'
+        )
+      : allMessages; // Staff/Manager sab dekhe
+
     callback(messages);
   });
   return chatRef;
 };
 
-// Staff helpers
+// ── Staff helpers ───────────────────────────────────────────────────────────
 export const getStaffProfile = async (uid) => {
   const staffRef = ref(database, `asap/staff/${uid}`);
   const snapshot = await get(staffRef);
@@ -106,12 +135,12 @@ export const updateStaffStatus = async (staffId, updates) => {
   await update(staffRef, updates);
 };
 
-// Detach listener
+// ── Listener detach ─────────────────────────────────────────────────────────
 export const detachListener = (refInstance) => {
   if (refInstance) off(refInstance);
 };
 
-// Broadcast helpers
+// ── Broadcast helpers ───────────────────────────────────────────────────────
 export const sendBroadcast = (floorKey, data) => {
   const broadcastRef = ref(database, `asap/broadcasts/${floorKey}`);
   return set(broadcastRef, {
@@ -129,6 +158,7 @@ export const clearBroadcast = (floorKey) => {
   return set(broadcastRef, { active: false });
 };
 
+// ── Seed demo data ──────────────────────────────────────────────────────────
 export const seedDemoData = async () => {
   const now = Date.now();
   const demoData = {
