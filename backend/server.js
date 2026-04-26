@@ -35,7 +35,7 @@ app.use('/api/gemini', geminiRoutes);
 
 // General route
 app.get('/', (req, res) => {
-  res.send('SurakshaNow Backend API is running.');
+  res.send('ASAP Backend API is running.');
 });
 
 // Global Error Handler

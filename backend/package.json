@@ -1,7 +1,7 @@
 {
-  "name": "surakshanow-backend",
+  "name": "asap-backend",
   "version": "1.0.0",
-  "description": "Backend for SurakshaNow platform",
+  "description": "Backend for ASAP platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -69,7 +69,7 @@ const QRCard = ({ label, roomId, size = 140 }) => {
     const svgData = new XMLSerializer().serializeToString(svg);
     const win = window.open('', '_blank');
     win.document.write(`
-      <html><head><title>SurakshaNow — ${label}</title>
+      <html><head><title>ASAP — ${label}</title>
       <style>
         body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; font-family: sans-serif; }
         .card { border: 2px solid #0A0F1E; padding: 20px; text-align: center; width: 220px; }
@@ -79,7 +79,7 @@ const QRCard = ({ label, roomId, size = 140 }) => {
         .hint { font-size: 9px; color: #999; border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; }
       </style></head><body>
       <div class="card">
-        <div class="logo">SURAKSHA NOW</div>
+        <div class="logo">ASAP</div>
         ${svgData}
         <div class="label">${label}</div>
         <div class="sub">Scan to report an emergency</div>

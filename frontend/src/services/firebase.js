@@ -26,7 +26,7 @@ export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
 
 // Incident helpers
 export const writeIncident = async (incidentData) => {
-  const incidentRef = push(ref(database, 'surakshanow/incidents'));
+  const incidentRef = push(ref(database, 'asap/incidents'));
   const id = incidentRef.key;
 
   const cleanData = Object.fromEntries(
@@ -45,12 +45,12 @@ export const writeIncident = async (incidentData) => {
 };
 
 export const updateIncident = async (incidentId, updates) => {
-  const incidentRef = ref(database, `surakshanow/incidents/${incidentId}`);
+  const incidentRef = ref(database, `asap/incidents/${incidentId}`);
   await update(incidentRef, updates);
 };
 
 export const listenToIncident = (incidentId, callback) => {
-  const incidentRef = ref(database, `surakshanow/incidents/${incidentId}`);
+  const incidentRef = ref(database, `asap/incidents/${incidentId}`);
   onValue(incidentRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -58,7 +58,7 @@ export const listenToIncident = (incidentId, callback) => {
 };
 
 export const listenToAllIncidents = (callback) => {
-  const incidentsRef = ref(database, 'surakshanow/incidents');
+  const incidentsRef = ref(database, 'asap/incidents');
   onValue(incidentsRef, (snapshot) => {
     const data = snapshot.val();
     const incidents = data ? Object.values(data) : [];
@@ -69,7 +69,7 @@ export const listenToAllIncidents = (callback) => {
 
 // Chat helpers
 export const writeMessage = async (incidentId, messageData) => {
-  const chatRef = push(ref(database, `surakshanow/incidents/${incidentId}/chat`));
+  const chatRef = push(ref(database, `asap/incidents/${incidentId}/chat`));
   await set(chatRef, {
     ...messageData,
     timestamp: Date.now(),
@@ -77,7 +77,7 @@ export const writeMessage = async (incidentId, messageData) => {
 };
 
 export const listenToChat = (incidentId, callback) => {
-  const chatRef = ref(database, `surakshanow/incidents/${incidentId}/chat`);
+  const chatRef = ref(database, `asap/incidents/${incidentId}/chat`);
   onValue(chatRef, (snapshot) => {
     const data = snapshot.val();
     const messages = data
@@ -90,19 +90,19 @@ export const listenToChat = (incidentId, callback) => {
 
 // Staff helpers
 export const getStaffProfile = async (uid) => {
-  const staffRef = ref(database, `surakshanow/staff/${uid}`);
+  const staffRef = ref(database, `asap/staff/${uid}`);
   const snapshot = await get(staffRef);
   return snapshot.val();
 };
 
 export const getManagerProfile = async (uid) => {
-  const managerRef = ref(database, `surakshanow/managers/${uid}`);
+  const managerRef = ref(database, `asap/managers/${uid}`);
   const snapshot = await get(managerRef);
   return snapshot.val();
 };
 
 export const updateStaffStatus = async (staffId, updates) => {
-  const staffRef = ref(database, `surakshanow/staff/${staffId}`);
+  const staffRef = ref(database, `asap/staff/${staffId}`);
   await update(staffRef, updates);
 };
 
@@ -113,7 +113,7 @@ export const detachListener = (refInstance) => {
 
 // Broadcast helpers
 export const sendBroadcast = (floorKey, data) => {
-  const broadcastRef = ref(database, `surakshanow/broadcasts/${floorKey}`);
+  const broadcastRef = ref(database, `asap/broadcasts/${floorKey}`);
   return set(broadcastRef, {
     active: true,
     floorKey,
@@ -125,7 +125,7 @@ export const sendBroadcast = (floorKey, data) => {
 };
 
 export const clearBroadcast = (floorKey) => {
-  const broadcastRef = ref(database, `surakshanow/broadcasts/${floorKey}`);
+  const broadcastRef = ref(database, `asap/broadcasts/${floorKey}`);
   return set(broadcastRef, { active: false });
 };
 
@@ -164,7 +164,7 @@ export const seedDemoData = async () => {
         name: 'Operations Manager',
         role: 'Duty Manager',
         phone: '+91-98765-44001',
-        email: 'manager@surakshanow.demo',
+        email: 'manager@asap.demo',
       },
     },
     incidents: {
@@ -227,7 +227,7 @@ export const seedDemoData = async () => {
     },
   };
 
-  await update(ref(database, 'surakshanow'), demoData);
+  await update(ref(database, 'asap'), demoData);
   return demoData;
 };
 

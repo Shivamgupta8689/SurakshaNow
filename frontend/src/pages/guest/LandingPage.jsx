@@ -24,7 +24,7 @@ const LandingPage = () => {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <span className="text-white font-bold text-lg tracking-wider uppercase">SurakshaNow</span>
+          <span className="text-white font-bold text-lg tracking-wider uppercase">ASAP</span>
         </div>
         <div className="flex items-center gap-4 hidden sm:flex">
           <Link to="/staff/login" className="text-text-secondary text-[11px] hover:text-white font-semibold uppercase tracking-wider transition-colors">

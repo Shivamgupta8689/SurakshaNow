@@ -13,8 +13,25 @@ const StaffLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const email = `${employeeId.replace(/[^a-zA-Z0-9]/g, '')}@surakshanow.app`;
-      const userCred = await loginWithEmail(email, password);
+      const normalizedId = employeeId.replace(/[^a-zA-Z0-9]/g, '');
+      const emails = [
+        `${normalizedId}@asap.app`,
+        `${normalizedId}@surakshanow.app`,
+      ];
+      let userCred = null;
+      let lastError = null;
+
+      for (const email of emails) {
+        try {
+          userCred = await loginWithEmail(email, password);
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (!userCred) throw lastError;
+
       const profile = await getStaffProfile(userCred.user.uid);
       if (profile) {
         toast.success('Login successful');
@@ -40,7 +57,7 @@ const StaffLogin = () => {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <span className="text-white font-bold text-xl tracking-wider uppercase">SurakshaNow</span>
+          <span className="text-white font-bold text-xl tracking-wider uppercase">ASAP</span>
         </div>
 
         <h1 className="text-white text-xl font-bold uppercase tracking-wide text-center mb-2">
@@ -59,7 +76,7 @@ const StaffLogin = () => {
               type="text"
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
-              placeholder="SN-XXXX-XXXX"
+              placeholder="ASAP-XXXX-XXXX"
               className="input-field"
               required
             />

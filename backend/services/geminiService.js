@@ -118,7 +118,7 @@ const getCrisisBotResponse = async (message, incidentContext) => {
         contents: [{
           parts: [{
             text: `
-You are CrisisBot for SurakshaNow hotel emergency system.
+You are CrisisBot for ASAP hotel emergency system.
 
 Incident:
 Type: ${incidentContext.type || "Unknown"}

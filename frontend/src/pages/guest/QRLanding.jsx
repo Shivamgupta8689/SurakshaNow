@@ -49,7 +49,7 @@ const QRLanding = () => {
   // Listen for active broadcast on this floor
   useEffect(() => {
     if (!database) return;
-    const broadcastRef = ref(database, `surakshanow/broadcasts/${floorKey}`);
+    const broadcastRef = ref(database, `asap/broadcasts/${floorKey}`);
     onValue(broadcastRef, (snap) => {
       const data = snap.val();
       // Only show if broadcast is active
@@ -99,7 +99,7 @@ const QRLanding = () => {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
-          <span className="text-white font-bold text-sm tracking-wider uppercase">SurakshaNow</span>
+          <span className="text-white font-bold text-sm tracking-wider uppercase">ASAP</span>
         </div>
         <div className="bg-accent-red px-3 py-1">
           <span className="text-white text-xs font-semibold">

@@ -43,7 +43,7 @@ const EscalationModal = ({ incident, onClose, onSend }) => {
     .map((contact) => `${contact.type}: ${contact.name}, ${contact.phone}, ETA ${contact.eta}`)
     .join('\n');
 
-  const defaultMessage = `EMERGENCY ALERT - SurakshaNow Crisis Management System
+  const defaultMessage = `EMERGENCY ALERT - ASAP Crisis Management System
 
 Incident Type: ${incident?.type || incident?.incidentType || 'Unknown'}
 Severity: ${incident?.severity || 'Unknown'}

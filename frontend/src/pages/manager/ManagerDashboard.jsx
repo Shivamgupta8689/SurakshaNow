@@ -264,7 +264,7 @@ const ManagerDashboard = () => {
             </svg>
           </div>
           <span className="text-white font-bold text-sm tracking-wider uppercase hidden sm:block">
-            SurakshaNow
+            ASAP
           </span>
         </div>
 
