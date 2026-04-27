@@ -5,13 +5,11 @@ import { detachListener, listenToAllIncidents } from '../../services/firebase';
 const LandingPage = () => {
   const [incidents, setIncidents] = useState([]);
 
-  // ✅ sessionStorage se lo
   const [myIncidentId, setMyIncidentId] = useState(sessionStorage.getItem('myIncidentId'));
   const [myRoomId, setMyRoomId] = useState(sessionStorage.getItem('myRoomId'));
 
   const myIncident = incidents.find(i => i.id === myIncidentId);
 
-  // ✅ Resolved hone par clear karo
   useEffect(() => {
     if (myIncident && myIncident.status === 'resolved') {
       sessionStorage.removeItem('myIncidentId');
@@ -41,12 +39,21 @@ const LandingPage = () => {
             className="h-16 sm:h-18 lg:h-20 w-auto object-contain"
           />
         </div>
-        <div className="flex items-center gap-4 hidden sm:flex">
+        <div className="hidden sm:flex items-center gap-4">
           <Link to="/staff/login" className="text-text-secondary text-[11px] hover:text-white font-semibold uppercase tracking-wider transition-colors">
             Staff Login
           </Link>
           <Link to="/manager/login" className="btn-outline text-[11px] px-4 py-2 uppercase tracking-wider">
             Manager Login
+          </Link>
+        </div>
+        {/* Mobile Nav */}
+        <div className="flex sm:hidden items-center gap-2">
+          <Link to="/staff/login" className="text-text-secondary text-[10px] hover:text-white font-semibold uppercase tracking-wider transition-colors">
+            Staff
+          </Link>
+          <Link to="/manager/login" className="btn-outline text-[10px] px-3 py-1.5 uppercase tracking-wider">
+            Manager
           </Link>
         </div>
       </nav>
@@ -73,7 +80,6 @@ const LandingPage = () => {
             <button className="btn-outline-white text-center">
               Watch Demo
             </button>
-            {/* ✅ Track button — sessionStorage se check hoga */}
             {myIncidentId && myRoomId && myIncident && ['active', 'inprogress'].includes(myIncident.status) && (
               <Link
                 to={`/guest/${myRoomId}/chat/${myIncidentId}`}
